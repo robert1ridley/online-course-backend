@@ -10,7 +10,6 @@ class UserFactory(object):
     else:
       raise NotImplementedError
 
-
   factory = staticmethod(factory)
 
 
@@ -19,8 +18,8 @@ class UserAdmin(UserFactory):
     self.username = None
     self.password = None
     self.id = None
+    self.usertype = 'ADMIN'
     self.is_admin = True
-    print("I'm admin")
 
 
 class UserStudent(UserFactory):
@@ -28,10 +27,10 @@ class UserStudent(UserFactory):
     self.username = None
     self.password = None
     self.id = None
-    self.enrolled_courses = []
-    self.grades = None
+    self.usertype = 'STUDENT'
     self.is_admin = False
-    print("I'm a student")
+    self.classes_signed_up = []
+    self.grades = {}
 
 
 class UserTeacher(UserFactory):
@@ -39,6 +38,6 @@ class UserTeacher(UserFactory):
     self.username = None
     self.password = None
     self.id = None
-    self.courses_teaching = []
+    self.usertype = 'TEACHER'
     self.is_admin = False
-    print("I'm a teacher")
+    self.teaching_classes = []
