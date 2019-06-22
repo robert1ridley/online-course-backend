@@ -39,3 +39,4 @@ api.add_resource(user_controllers.UserLogoutRefreshController, '/logout/refresh'
 api.add_resource(user_controllers.TokenRefreshController, '/token/refresh')
 api.add_resource(user_controllers.AllUsersController, '/users')
 api.add_resource(user_controllers.SecretResourceController, '/secret')
+api.add_resource(user_controllers.TestCreateUserController, '/testuser')

@@ -1,18 +1,22 @@
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from flask_restful import Resource, reqparse
 from data_access_models.user_data_models import UserModel, RevokedTokenModel
+from models import UserFactory
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
 
 
 parser = reqparse.RequestParser()
-parser.add_argument('username', help = 'This field cannot be blank', required = True)
-parser.add_argument('password', help = 'This field cannot be blank', required = True)
-parser.add_argument('usertype', help = 'STUDENT | TEACHER | ADMIN', required = True)
+def get_registration_info():
+    parser.add_argument('username', help = 'This field cannot be blank', required = True)
+    parser.add_argument('password', help = 'This field cannot be blank', required = True)
+    parser.add_argument('usertype', help = 'Enter type: STUDENT | TEACHER | ADMIN', required = True)
+    return parser.parse_args()
 
 
 class UserRegistrationController(Resource):
     def post(self):
-        data = parser.parse_args()
-        print("User Data: {}".format(data))
+        data = get_registration_info()
         if UserModel.find_by_username(data['username']):
             return {'message': 'User {} already exists'.format(data['username'])}
 
@@ -36,7 +40,7 @@ class UserRegistrationController(Resource):
 
 class UserLoginController(Resource):
     def post(self):
-        data = parser.parse_args()
+        data = get_registration_info()
         current_user = UserModel.find_by_username(data['username'])
 
         if not current_user:
@@ -100,3 +104,10 @@ class SecretResourceController(Resource):
         return {
             'answer': 42
         }
+
+
+class TestCreateUserController(Resource):
+    def post(self):
+        data = get_registration_info()
+        user = UserFactory.factory(data['usertype'])
+        return {'user': 'Got user data'}
