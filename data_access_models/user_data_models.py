@@ -12,6 +12,8 @@ class UserDataModelFactory(object):
     else:
       raise NotImplementedError
 
+  factory = staticmethod(factory)
+
 
 class UserModelStudent(UserDataModelFactory, db.Model):
   __tablename__ = 'students'
