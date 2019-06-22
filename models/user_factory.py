@@ -10,7 +10,7 @@ class UserFactory(object):
     if type == "TEACHER":
       return UserTeacher()
     if type == "ADMIN":
-      return UserAdmin
+      return UserAdmin()
     else:
       raise NotImplementedError
 
