@@ -19,12 +19,14 @@ class UserModelStudent(UserDataModelFactory, db.Model):
   __tablename__ = 'students'
 
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String(120), unique=True, nullable=False)
   username = db.Column(db.String(120), unique=True, nullable=False)
   password = db.Column(db.String(120), nullable=False)
   usertype = db.Column(db.String(120), nullable=False)
   is_admin = db.Column(db.Boolean, unique=False, default=False)
 
   def set_data_fields(self, data):
+    self.uuid = data.uuid
     self.username = data.username
     self.password = data.password
     self.is_admin = data.is_admin
@@ -33,6 +35,7 @@ class UserModelStudent(UserDataModelFactory, db.Model):
   def save_to_db(self):
     db.session.add(self)
     db.session.commit()
+    print(self.id)
 
   @classmethod
   def find_by_username(cls, username):
@@ -62,12 +65,14 @@ class UserModelTeacher(UserDataModelFactory, db.Model):
   __tablename__ = 'teachers'
 
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String(120), unique=True, nullable=False)
   username = db.Column(db.String(120), unique=True, nullable=False)
   password = db.Column(db.String(120), nullable=False)
   usertype = db.Column(db.String(120), nullable=False)
   is_admin = db.Column(db.Boolean, unique=False, default=False)
 
   def set_data_fields(self, data):
+    self.uuid = data.uuid
     self.username = data.username
     self.password = data.password
     self.is_admin = data.is_admin
@@ -105,12 +110,14 @@ class UserModelAdmin(UserDataModelFactory, db.Model):
   __tablename__ = 'admin'
 
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String(120), unique=True, nullable=False)
   username = db.Column(db.String(120), unique=True, nullable=False)
   password = db.Column(db.String(120), nullable=False)
   usertype = db.Column(db.String(120), nullable=False)
   is_admin = db.Column(db.Boolean, unique=False, default=False)
 
   def set_data_fields(self, data):
+    self.uuid = data.uuid
     self.username = data.username
     self.password = data.password
     self.is_admin = data.is_admin

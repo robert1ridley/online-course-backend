@@ -21,6 +21,7 @@ def create_tables():
 
 
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+app.config['PROPAGATE_EXCEPTIONS'] = True
 jwt = JWTManager(app)
 
 app.config['JWT_BLACKLIST_ENABLED'] = True
@@ -39,5 +40,7 @@ api.add_resource(user_controllers.UserLoginController, '/login')
 api.add_resource(user_controllers.UserLogoutAccessController, '/logout/access')
 api.add_resource(user_controllers.UserLogoutRefreshController, '/logout/refresh')
 api.add_resource(user_controllers.TokenRefreshController, '/token/refresh')
+api.add_resource(user_controllers.SingleStudentUserController, '/user/student')
+api.add_resource(user_controllers.SingleTeacherUserController, '/user/teacher')
 api.add_resource(user_controllers.AllUsersController, '/users')
 api.add_resource(user_controllers.SecretResourceController, '/secret')
