@@ -32,7 +32,7 @@ def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     return user_data_models.RevokedTokenModel.is_jti_blacklisted(jti)
 
-from controllers import user_controllers
+from controllers import user_controllers, class_controllers
 from data_access_models import user_data_models
 
 api.add_resource(user_controllers.UserRegistrationController, '/registration')
@@ -44,3 +44,4 @@ api.add_resource(user_controllers.SingleStudentUserController, '/user/student')
 api.add_resource(user_controllers.SingleTeacherUserController, '/user/teacher')
 api.add_resource(user_controllers.AllUsersController, '/users')
 api.add_resource(user_controllers.SecretResourceController, '/secret')
+api.add_resource(class_controllers.CreateNewClassController, '/user/teacher/newclass')

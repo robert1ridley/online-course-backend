@@ -90,7 +90,7 @@ class UserLoginController(Resource):
         user.username = data['username']
         user.password = data['password']
         current_user = UserDataModelFactory.factory(user.usertype).find_by_username(user.username)
-
+        user.uuid = current_user.uuid
         if not current_user:
             return {
                 'error': True,
@@ -104,7 +104,8 @@ class UserLoginController(Resource):
                 'error': False,
                 'message': 'Logged in as {}'.format(current_user.username),
                 'access_token': access_token,
-                'refresh_token': refresh_token
+                'refresh_token': refresh_token,
+                'user_id': user.uuid
                 }
         else:
             return {
