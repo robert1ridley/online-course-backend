@@ -1,6 +1,5 @@
 from datetime import datetime
 from run import db
-from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 
 class ClassDataModel(db.Model):
@@ -40,12 +39,16 @@ class ClassDataModel(db.Model):
 
 
     @classmethod
+    def find_by_teacher_id(cls, teacher_id):
+        return cls.query.filter_by(teacher_id=teacher_id)
+
+
+    @classmethod
     def return_all(cls):
         def to_json(json_vals):
             return {
                 'json_data': json_vals
             }
-
         return {'classes': list(map(lambda x: to_json(x), ClassDataModel.query.all()))}
 
 
