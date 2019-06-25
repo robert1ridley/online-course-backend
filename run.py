@@ -49,3 +49,4 @@ api.add_resource(class_controllers.GetAllTeacherClasses, '/user/teacher/allclass
 api.add_resource(class_controllers.GetSingleClassTeacher, '/user/teacher/singleclass')
 api.add_resource(class_controllers.GetAllClasses, '/user/student/allclasses')
 api.add_resource(class_controllers.SignUpForClass, '/user/student/classsignup')
+api.add_resource(class_controllers.GetAllStudentClasses, '/user/student/myclasses')

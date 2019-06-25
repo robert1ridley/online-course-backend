@@ -90,12 +90,12 @@ class UserLoginController(Resource):
         user.username = data['username']
         user.password = data['password']
         current_user = UserDataModelFactory.factory(user.usertype).find_by_username(user.username)
-        user.uuid = current_user.uuid
         if not current_user:
             return {
                 'error': True,
                 'message': 'User {} doesn\'t exist'.format(user.username)
             }
+        user.uuid = current_user.uuid
 
         if verify_hash(user.password, current_user.password):
             access_token = create_access_token(identity = user.username)

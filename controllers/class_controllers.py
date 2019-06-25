@@ -47,6 +47,12 @@ def sign_up_for_class_data():
     return parser.parse_args()
 
 
+def get_all_student_class_data():
+    parser.add_argument('userid', help='id of user')
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    return parser.parse_args()
+
+
 def validate_teacher(user):
     usertype = user['usertype']
     if usertype != 'TEACHER' and usertype != 'ADMIN':
@@ -76,8 +82,8 @@ def validate_create_class(data):
         return False, {'error': True, 'message': 'Please fill out Class Name'}
     if class_description == '':
         return False, {'error': True, 'message': 'Please fill out Class Description'}
-    if end_day == '' or end_month == '' or end_year == '':
-        return False, {'error': True, 'message': 'Please fill out End Date of class'}
+    if end_day == None or end_month == None or end_year == None:
+        return False, {'error': True, 'message': 'Please fill out class finish date'}
     if usertype != 'TEACHER' and usertype != 'ADMIN':
         return False, {'error': True, 'message': 'Not Authorized'}
     return True, True
@@ -119,7 +125,7 @@ class CreateNewClassController(Resource):
         if current_class_name:
             return {
                 'error': True,
-                'message': 'Must have unique name'
+                'message': 'Class name must be unique'
             }
         if is_already_entity_name:
             return {
@@ -217,7 +223,6 @@ class SignUpForClass(Resource):
                 'error': True,
                 'message': 'Resource not found'
             }
-        # TODO: Check User hasn't already signed up for class
         sign_up_model = SignUpForClassModel()
         now = datetime.datetime.now()
         sign_up_model.created_on = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
@@ -241,3 +246,28 @@ class SignUpForClass(Resource):
             'message': 'Successfully signed up for class'
         }
 
+
+class GetAllStudentClasses(Resource):
+    @jwt_required
+    def post(self):
+        request_data = get_all_student_class_data()
+        student_id = request_data['userid']
+        student_classes = ClassSignupDataModel.find_all_by_student_id(student_id)
+        if student_classes is None:
+            return {
+                # TODO: What to return here
+                'error': True,
+                'message': 'No classes yet'
+            }
+        classes_signed_up_by_student = []
+        for student_class in student_classes:
+            class_uuid = student_class.class_uuid
+            full_class = ClassDataModel.find_by_class_id(class_uuid)
+            full_class_model = ClassModel()
+            full_class_model.initiate_resource(full_class.teacher_id, full_class.teacher_name, full_class.created_on, full_class.class_name)
+            full_class_model.class_uuid = class_uuid
+            full_class_model.class_description = full_class.class_description
+            full_class_model.class_end_date = full_class.class_end_date
+            full_object = full_class_model.get_response_object()
+            classes_signed_up_by_student.append(full_object)
+        return json.dumps(classes_signed_up_by_student, default=convert_date_to_json_serializable)

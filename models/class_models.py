@@ -38,6 +38,9 @@ class ClassModel(ResourseInfo):
     def set_teacher_name(self, teacher_name):
         self.teacher_name = teacher_name
 
+    def set_class_description(self, class_description):
+        self.class_description = class_description
+
     def get_response_object(self):
         class_ = {
             'class_uuid': self.class_uuid,
