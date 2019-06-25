@@ -7,6 +7,7 @@ from data_access_models.class_data_models import ClassDataModel
 from utils import generate_uuid
 from models import UserFactory, ClassModel, AssignmentModel, SumbissionModel
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
+import json
 
 
 parser = reqparse.RequestParser()
@@ -27,11 +28,29 @@ def get_teacher_data():
     return parser.parse_args()
 
 
+def get_single_class_teacher_req():
+    parser.add_argument('userid', help='id of user')
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    parser.add_argument('class_id', help='Enter id of class')
+    return parser.parse_args()
+
+
 def validate_teacher(user):
     usertype = user['usertype']
     if usertype != 'TEACHER' and usertype != 'ADMIN':
         return False, {'error': True, 'message': 'Not Authorized'}
     return True, True
+
+
+def validate_teacher_and_class(teacher_id, class_):
+    if teacher_id != class_.teacher_id:
+        return False, {'error': True, 'message': 'User not authorized to view resource'}
+    return True, True
+
+
+def convert_date_to_json_serializable(o):
+    if isinstance(o, datetime.datetime):
+        return o.__str__()
 
 
 def validate_create_class(data):
@@ -120,10 +139,33 @@ class GetAllTeacherClasses(Resource):
             class_.class_end_date = teacher_class.class_end_date
             class_obj = class_.get_response_object()
             teacher_classlist.append(class_obj)
-        print(teacher_classlist)
-        # TODO: Figure out way to JSON serialize dates
         return {
             'error': False,
             'message': 'All good',
-            # 'classes': teacher_classlist
+            'classes': json.dumps(teacher_classlist, default = convert_date_to_json_serializable)
         }
+
+
+class GetSingleClassTeacher(Resource):
+    @jwt_required
+    def post(self):
+        request_data = get_single_class_teacher_req()
+        class_data_model = ClassDataModel.find_by_class_id(request_data['class_id'])
+        if class_data_model == None:
+            return {
+                'error': True,
+                'message': 'Resource not found'
+            }
+        is_valid, payload = validate_teacher_and_class(request_data['userid'], class_data_model)
+        if not is_valid:
+            return payload
+        else:
+            class_ = ClassModel()
+            class_.initiate_resource(class_data_model.teacher_id, class_data_model.teacher_name,
+                                     class_data_model.created_on, class_data_model.class_name)
+            class_.class_uuid = class_data_model.class_uuid
+            class_.class_description = class_data_model.class_description
+            class_.class_end_date = class_data_model.class_end_date
+            class_obj = class_.get_response_object()
+            return json.dumps(class_obj, default = convert_date_to_json_serializable)
+

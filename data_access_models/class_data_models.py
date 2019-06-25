@@ -39,6 +39,11 @@ class ClassDataModel(db.Model):
 
 
     @classmethod
+    def find_by_class_id(cls, class_id):
+        return cls.query.filter_by(class_uuid=class_id).first()
+
+
+    @classmethod
     def find_by_teacher_id(cls, teacher_id):
         return cls.query.filter_by(teacher_id=teacher_id)
 
