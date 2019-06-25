@@ -92,3 +92,22 @@ class SumbissionModel(ResourseInfo):
 
     def set_class_name(self, class_name):
         self.class_name = class_name
+
+
+class SignUpForClassModel(ResourseInfo):
+    def __init__(self):
+        self.item_uuid = None
+        self.class_uuid = None
+        self.student_id = None
+        self.created_on = None
+
+
+    def get_response_object(self):
+        signup_object = {
+            'item_uuid': self.item_uuid,
+            'class_uuid': self.class_uuid,
+            'student_id': self.student_id,
+            'created_on': self.created_on
+        }
+
+        return signup_object

@@ -3,9 +3,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import datetime
 from flask_restful import Resource, reqparse
 from data_access_models.user_data_models import UserDataModelFactory
-from data_access_models.class_data_models import ClassDataModel
+from data_access_models.class_data_models import ClassDataModel, ClassSignupDataModel
 from utils import generate_uuid
-from models import UserFactory, ClassModel, AssignmentModel, SumbissionModel
+from models import UserFactory, ClassModel, AssignmentModel, SumbissionModel, SignUpForClassModel
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
 import json
 
@@ -28,7 +28,19 @@ def get_teacher_data():
     return parser.parse_args()
 
 
+def get_account_type_data():
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    return parser.parse_args()
+
+
 def get_single_class_teacher_req():
+    parser.add_argument('userid', help='id of user')
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    parser.add_argument('class_id', help='Enter id of class')
+    return parser.parse_args()
+
+
+def sign_up_for_class_data():
     parser.add_argument('userid', help='id of user')
     parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
     parser.add_argument('class_id', help='Enter id of class')
@@ -151,7 +163,7 @@ class GetSingleClassTeacher(Resource):
     def post(self):
         request_data = get_single_class_teacher_req()
         class_data_model = ClassDataModel.find_by_class_id(request_data['class_id'])
-        if class_data_model == None:
+        if class_data_model is None:
             return {
                 'error': True,
                 'message': 'Resource not found'
@@ -167,5 +179,65 @@ class GetSingleClassTeacher(Resource):
             class_.class_description = class_data_model.class_description
             class_.class_end_date = class_data_model.class_end_date
             class_obj = class_.get_response_object()
-            return json.dumps(class_obj, default = convert_date_to_json_serializable)
+            return json.dumps(class_obj, default=convert_date_to_json_serializable)
+
+
+class GetAllClasses(Resource):
+    @jwt_required
+    def post(self):
+        request_data = get_account_type_data()
+        if request_data['usertype'] != 'STUDENT' and request_data['usertype'] != 'ADMIN':
+            return {
+                'error': True,
+                'message': 'Not Authorized to view page'
+            }
+        all_classes = ClassDataModel.return_all()
+        class_list = []
+        for c in all_classes['classes']:
+            _class = c['json_data']
+            class_ = ClassModel()
+            class_.initiate_resource(_class.teacher_id, _class.teacher_name,
+                                     _class.created_on, _class.class_name)
+            class_.class_uuid = _class.class_uuid
+            class_.class_description = _class.class_description
+            class_.class_end_date = _class.class_end_date
+            class_obj = class_.get_response_object()
+            class_list.append(class_obj)
+        return json.dumps(class_list, default=convert_date_to_json_serializable)
+
+
+class SignUpForClass(Resource):
+    @jwt_required
+    def post(self):
+        request_data = sign_up_for_class_data()
+        class_id = request_data['class_id']
+        class_data_model = ClassDataModel.find_by_class_id(class_id)
+        if class_data_model is None:
+            return {
+                'error': True,
+                'message': 'Resource not found'
+            }
+        # TODO: Check User hasn't already signed up for class
+        sign_up_model = SignUpForClassModel()
+        now = datetime.datetime.now()
+        sign_up_model.created_on = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
+        sign_up_model.student_id = request_data['userid']
+        sign_up_model.class_uuid = request_data['class_id']
+        sign_up_model.item_uuid = generate_uuid()
+        class_sign_up_data_model = ClassSignupDataModel()
+        class_sign_up_data_model.set_data_fields(sign_up_model)
+        check_classes = class_sign_up_data_model.find_all_by_student_id(request_data['userid'])
+        if check_classes is not None:
+            for item in check_classes:
+                if item.class_uuid == sign_up_model.class_uuid:
+                    return {
+                        'error': True,
+                        'message': 'You have already signed up for this class'
+                    }
+
+        class_sign_up_data_model.save_to_db()
+        return {
+            'error': False,
+            'message': 'Successfully signed up for class'
+        }
 
