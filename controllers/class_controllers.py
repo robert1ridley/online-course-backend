@@ -155,6 +155,19 @@ class GetAllTeacherClasses(Resource):
             class_.class_uuid = teacher_class.class_uuid
             class_.class_description = teacher_class.class_description
             class_.class_end_date = teacher_class.class_end_date
+            students_signed_up = ClassSignupDataModel.find_by_class_id(class_.class_uuid)
+            if students_signed_up is not None:
+                for s in students_signed_up:
+                    student_id = s.student_id
+                    student = UserDataModelFactory.factory('STUDENT')
+                    student_data_obj = student.find_by_uuid(student_id)
+                    student_model = UserFactory.factory('STUDENT')
+                    student_model.username = student_data_obj.username
+                    student_model.uuid = student_data_obj.uuid
+                    student_model.usertype = student_data_obj.usertype
+                    student_model.is_admin = student_data_obj.is_admin
+                    student_object = student_model.get_user_object()
+                    class_.students_signed_up.append(student_object)
             class_obj = class_.get_response_object()
             teacher_classlist.append(class_obj)
         return {
@@ -207,6 +220,19 @@ class GetAllClasses(Resource):
             class_.class_uuid = _class.class_uuid
             class_.class_description = _class.class_description
             class_.class_end_date = _class.class_end_date
+            students_signed_up = ClassSignupDataModel.find_by_class_id(_class.class_uuid)
+            if students_signed_up is not None:
+                for s in students_signed_up:
+                    student_id = s.student_id
+                    student = UserDataModelFactory.factory('STUDENT')
+                    student_data_obj = student.find_by_uuid(student_id)
+                    student_model = UserFactory.factory('STUDENT')
+                    student_model.username = student_data_obj.username
+                    student_model.uuid = student_data_obj.uuid
+                    student_model.usertype = student_data_obj.usertype
+                    student_model.is_admin = student_data_obj.is_admin
+                    student_object = student_model.get_user_object()
+                    class_.students_signed_up.append(student_object)
             class_obj = class_.get_response_object()
             class_list.append(class_obj)
         return json.dumps(class_list, default=convert_date_to_json_serializable)
@@ -256,7 +282,7 @@ class GetAllStudentClasses(Resource):
         if student_classes is None:
             return {
                 # TODO: What to return here
-                'error': True,
+                'error': False,
                 'message': 'No classes yet'
             }
         classes_signed_up_by_student = []
@@ -268,6 +294,19 @@ class GetAllStudentClasses(Resource):
             full_class_model.class_uuid = class_uuid
             full_class_model.class_description = full_class.class_description
             full_class_model.class_end_date = full_class.class_end_date
+            students_signed_up = ClassSignupDataModel.find_by_class_id(class_uuid)
+            if students_signed_up is not None:
+                for s in students_signed_up:
+                    student_id = s.student_id
+                    student = UserDataModelFactory.factory('STUDENT')
+                    student_data_obj = student.find_by_uuid(student_id)
+                    student_model = UserFactory.factory('STUDENT')
+                    student_model.username = student_data_obj.username
+                    student_model.uuid = student_data_obj.uuid
+                    student_model.usertype = student_data_obj.usertype
+                    student_model.is_admin = student_data_obj.is_admin
+                    student_object = student_model.get_user_object()
+                    full_class_model.students_signed_up.append(student_object)
             full_object = full_class_model.get_response_object()
             classes_signed_up_by_student.append(full_object)
         return json.dumps(classes_signed_up_by_student, default=convert_date_to_json_serializable)

@@ -94,7 +94,7 @@ class ClassSignupDataModel(db.Model):
 
     @classmethod
     def find_by_class_id(cls, class_id):
-        return cls.query.filter_by(class_uuid=class_id).first()
+        return cls.query.filter_by(class_uuid=class_id)
 
 
     @classmethod

@@ -38,6 +38,10 @@ class UserModelStudent(UserDataModelFactory, db.Model):
     print(self.id)
 
   @classmethod
+  def find_by_uuid(cls, uuid):
+    return cls.query.filter_by(uuid=uuid).first()
+
+  @classmethod
   def find_by_username(cls, username):
     return cls.query.filter_by(username=username).first()
 
@@ -83,6 +87,10 @@ class UserModelTeacher(UserDataModelFactory, db.Model):
     db.session.commit()
 
   @classmethod
+  def find_by_uuid(cls, uuid):
+    return cls.query.filter_by(uuid=uuid).first()
+
+  @classmethod
   def find_by_username(cls, username):
     return cls.query.filter_by(username=username).first()
 
@@ -126,6 +134,10 @@ class UserModelAdmin(UserDataModelFactory, db.Model):
   def save_to_db(self):
     db.session.add(self)
     db.session.commit()
+
+  @classmethod
+  def find_by_uuid(cls, uuid):
+    return cls.query.filter_by(uuid=uuid).first()
 
   @classmethod
   def find_by_username(cls, username):
