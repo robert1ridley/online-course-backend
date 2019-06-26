@@ -53,6 +53,19 @@ def get_all_student_class_data():
     return parser.parse_args()
 
 
+def get_add_assignment_data():
+    parser.add_argument('userid', help='id of user')
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    parser.add_argument('username', help='Add name of user')
+    parser.add_argument('class_id', help='Enter id of class')
+    parser.add_argument('assignment_title', help='Enter title of assignment')
+    parser.add_argument('assignment_content', help='Enter instructions for assignment')
+    parser.add_argument('end_day', help='Enter end date for class')
+    parser.add_argument('end_month', help='Enter end date for class')
+    parser.add_argument('end_year', help='Enter end date for class')
+    return parser.parse_args()
+
+
 def validate_teacher(user):
     usertype = user['usertype']
     if usertype != 'TEACHER' and usertype != 'ADMIN':
@@ -86,6 +99,24 @@ def validate_create_class(data):
         return False, {'error': True, 'message': 'Please fill out class finish date'}
     if usertype != 'TEACHER' and usertype != 'ADMIN':
         return False, {'error': True, 'message': 'Not Authorized'}
+    return True, True
+
+
+def validate_add_assignment(data):
+    usertype = data['usertype']
+    assignment_title = data['assignment_title']
+    assignment_content = data['assignment_content']
+    end_day = data['end_day']
+    end_month = data['end_month']
+    end_year = data['end_year']
+    if usertype != 'TEACHER' and usertype != 'ADMIN':
+        return False, {'error': True, 'message': 'Not Authorized'}
+    if assignment_title == '':
+        return False, {'error': True, 'message': 'Please add assignment title'}
+    if assignment_content == '':
+        return False, {'error': True, 'message': 'Please add assignment instructions'}
+    if end_day == None or end_month == None or end_year == None:
+        return False, {'error': True, 'message': 'Please fill out class finish date'}
     return True, True
 
 
@@ -187,6 +218,9 @@ class GetSingleClassTeacher(Resource):
             class_.class_uuid = class_data_model.class_uuid
             class_.class_description = class_data_model.class_description
             class_.class_end_date = class_data_model.class_end_date
+            students_signed_up = ClassSignupDataModel.find_by_class_id(class_data_model.class_uuid)
+            if students_signed_up is not None:
+                class_.set_students_signed_up(students_signed_up)
             class_obj = class_.get_response_object()
             return json.dumps(class_obj, default=convert_date_to_json_serializable)
 
@@ -261,7 +295,6 @@ class GetAllStudentClasses(Resource):
         student_classes = ClassSignupDataModel.find_all_by_student_id(student_id)
         if student_classes is None:
             return {
-                # TODO: What to return here
                 'error': False,
                 'message': 'No classes yet'
             }
@@ -280,3 +313,38 @@ class GetAllStudentClasses(Resource):
             full_object = full_class_model.get_response_object()
             classes_signed_up_by_student.append(full_object)
         return json.dumps(classes_signed_up_by_student, default=convert_date_to_json_serializable)
+
+
+class AddAssignment(Resource):
+    @jwt_required
+    def post(self):
+        # TODO: COMPLETE THIS METHOD FOR ADDING ASSIGNMENTS
+        request_data = get_add_assignment_data()
+        is_request_valid, payload = validate_add_assignment(request_data)
+        if not is_request_valid:
+            return payload
+        class_name = ClassDataModel.find_by_class_id(request_data['class_id'])
+        class_id = request_data['class_id']
+        assignment_title = request_data['assignment_title']
+        assignment_content = request_data['assignment_content']
+        end_day = request_data['end_day']
+        end_month = request_data['end_month']
+        end_year = request_data['end_year']
+        teacher_id = request_data['userid']
+        teacher_name = request_data['username']
+        now = datetime.datetime.now()
+        created_on = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
+        assignment_model = AssignmentModel()
+        assignment_model.initiate_resource(teacher_id, teacher_name, created_on, class_name)
+        assignment_model.assignment_id = generate_uuid()
+        assignment_model.class_id = class_id
+        assignment_model.teacher_id = teacher_id
+        assignment_model.assignment_title = assignment_title
+        assignment_model.assignment_content = assignment_content
+        assignment_model.deadline = datetime.datetime(int(end_year), int(end_month), int(end_day), 0, 0, 0)
+        # TODO: ADD THE MODEL TO THE DATA MODEL
+
+
+
+        self.submissions = []
+

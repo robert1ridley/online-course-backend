@@ -79,7 +79,9 @@ class AssignmentModel(ResourseInfo):
     def __init__(self):
         self.assignment_id = None
         self.class_name = None
+        self.class_id = None
         self.teacher_id = None
+        self.assignment_title = None
         self.assignment_content = None
         self.created_on = None
         self.deadline = None
@@ -87,6 +89,9 @@ class AssignmentModel(ResourseInfo):
 
     def set_teacher_id(self, teacher_id):
         self.teacher_id = teacher_id
+
+    def set_teacher_name(self, teacher_name):
+        self.teacher_name = teacher_name
 
     def set_created_on(self, created_on):
         self.created_on = created_on
