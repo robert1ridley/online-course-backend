@@ -1,3 +1,8 @@
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from data_access_models.user_data_models import UserDataModelFactory
+from models import UserFactory
+
 class ResourseInfo:
     """Template pattern for class(课程) and assignment classes"""
 
@@ -40,6 +45,20 @@ class ClassModel(ResourseInfo):
 
     def set_class_description(self, class_description):
         self.class_description = class_description
+
+    def set_students_signed_up(self, students_signed_up):
+        """Accept students_signed_up as instance of ClassSignupDataModel"""
+        for s in students_signed_up:
+            student_id = s.student_id
+            student = UserDataModelFactory.factory('STUDENT')
+            student_data_obj = student.find_by_uuid(student_id)
+            student_model = UserFactory.factory('STUDENT')
+            student_model.username = student_data_obj.username
+            student_model.uuid = student_data_obj.uuid
+            student_model.usertype = student_data_obj.usertype
+            student_model.is_admin = student_data_obj.is_admin
+            student_object = student_model.get_user_object()
+            self.students_signed_up.append(student_object)
 
     def get_response_object(self):
         class_ = {
