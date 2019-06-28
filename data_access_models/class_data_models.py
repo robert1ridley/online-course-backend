@@ -119,3 +119,67 @@ class ClassSignupDataModel(db.Model):
             return {'message': '{} row(s) deleted'.format(num_rows_deleted)}
         except:
             return {'message': 'Something went wrong'}
+
+
+class AssignmentDataModel(db.Model):
+    __tablename__ = 'assignments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_uuid = db.Column(db.String(120), unique=True, nullable=False)
+    class_uuid = db.Column(db.String(120), unique=False, nullable=False)
+    class_name = db.Column(db.String(120), unique=False, nullable=False)
+    teacher_id = db.Column(db.String(120), unique=False, nullable=False)
+    teacher_name = db.Column(db.String(120), unique=False, nullable=False)
+    assignment_title = db.Column(db.String(120), unique=False, nullable=False)
+    assignment_content = db.Column(db.String(120), unique=False, nullable=False)
+    created_on = db.Column(db.DateTime, default=datetime.utcnow)
+    deadline = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_data_fields(self, data):
+        self.assignment_uuid = data.assignment_id
+        self.class_uuid = data.class_id
+        self.class_name = data.class_name
+        self.teacher_id = data.teacher_id
+        self.teacher_name = data.teacher_name
+        self.assignment_title = data.assignment_title
+        self.assignment_content = data.assignment_content
+        self.created_on = data.created_on
+        self.deadline = data.deadline
+
+
+    def save_to_db(self):
+        # try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        # except:
+        #     return False
+
+
+    @classmethod
+    def find_by_class_id(cls, class_uuid):
+        return cls.query.filter_by(class_uuid=class_uuid)
+
+
+    @classmethod
+    def find_all_by_student_id(cls, student_id):
+        return cls.query.filter_by(student_id=student_id)
+
+
+    @classmethod
+    def return_all(cls):
+        def to_json(json_vals):
+            return {
+                'json_data': json_vals
+            }
+        return {'classes': list(map(lambda x: to_json(x), ClassDataModel.query.all()))}
+
+
+    @classmethod
+    def delete_all(cls):
+        try:
+            num_rows_deleted = db.session.query(cls).delete()
+            db.session.commit()
+            return {'message': '{} row(s) deleted'.format(num_rows_deleted)}
+        except:
+            return {'message': 'Something went wrong'}

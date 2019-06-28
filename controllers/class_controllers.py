@@ -3,7 +3,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import datetime
 from flask_restful import Resource, reqparse
 from data_access_models.user_data_models import UserDataModelFactory
-from data_access_models.class_data_models import ClassDataModel, ClassSignupDataModel
+from data_access_models.class_data_models import ClassDataModel, ClassSignupDataModel, AssignmentDataModel
 from utils import generate_uuid
 from models import UserFactory, ClassModel, AssignmentModel, SumbissionModel, SignUpForClassModel
 from flask_jwt_extended import (jwt_required, get_jwt_identity)
@@ -189,6 +189,9 @@ class GetAllTeacherClasses(Resource):
             students_signed_up = ClassSignupDataModel.find_by_class_id(class_.class_uuid)
             if students_signed_up is not None:
                 class_.set_students_signed_up(students_signed_up)
+            assignments = AssignmentDataModel.find_by_class_id(class_.class_uuid)
+            if assignments is not None:
+                class_.set_assignments(assignments)
             class_obj = class_.get_response_object()
             teacher_classlist.append(class_obj)
         return {
@@ -221,6 +224,9 @@ class GetSingleClassTeacher(Resource):
             students_signed_up = ClassSignupDataModel.find_by_class_id(class_data_model.class_uuid)
             if students_signed_up is not None:
                 class_.set_students_signed_up(students_signed_up)
+            assignments = AssignmentDataModel.find_by_class_id(class_.class_uuid)
+            if assignments is not None:
+                class_.set_assignments(assignments)
             class_obj = class_.get_response_object()
             return json.dumps(class_obj, default=convert_date_to_json_serializable)
 
@@ -247,6 +253,9 @@ class GetAllClasses(Resource):
             students_signed_up = ClassSignupDataModel.find_by_class_id(_class.class_uuid)
             if students_signed_up is not None:
                 class_.set_students_signed_up(students_signed_up)
+            assignments = AssignmentDataModel.find_by_class_id(class_.class_uuid)
+            if assignments is not None:
+                class_.set_assignments(assignments)
             class_obj = class_.get_response_object()
             class_list.append(class_obj)
         return json.dumps(class_list, default=convert_date_to_json_serializable)
@@ -310,6 +319,9 @@ class GetAllStudentClasses(Resource):
             students_signed_up = ClassSignupDataModel.find_by_class_id(class_uuid)
             if students_signed_up is not None:
                 full_class_model.set_students_signed_up(students_signed_up)
+            assignments = AssignmentDataModel.find_by_class_id(class_uuid)
+            if assignments is not None:
+                full_class_model.set_assignments(assignments)
             full_object = full_class_model.get_response_object()
             classes_signed_up_by_student.append(full_object)
         return json.dumps(classes_signed_up_by_student, default=convert_date_to_json_serializable)
@@ -318,12 +330,12 @@ class GetAllStudentClasses(Resource):
 class AddAssignment(Resource):
     @jwt_required
     def post(self):
-        # TODO: COMPLETE THIS METHOD FOR ADDING ASSIGNMENTS
         request_data = get_add_assignment_data()
         is_request_valid, payload = validate_add_assignment(request_data)
         if not is_request_valid:
             return payload
-        class_name = ClassDataModel.find_by_class_id(request_data['class_id'])
+        class_ = ClassDataModel.find_by_class_id(request_data['class_id'])
+        class_name = class_.class_name
         class_id = request_data['class_id']
         assignment_title = request_data['assignment_title']
         assignment_content = request_data['assignment_content']
@@ -342,9 +354,16 @@ class AddAssignment(Resource):
         assignment_model.assignment_title = assignment_title
         assignment_model.assignment_content = assignment_content
         assignment_model.deadline = datetime.datetime(int(end_year), int(end_month), int(end_day), 0, 0, 0)
-        # TODO: ADD THE MODEL TO THE DATA MODEL
-
-
-
-        self.submissions = []
-
+        assignment_data_model = AssignmentDataModel()
+        assignment_data_model.set_data_fields(assignment_model)
+        saved = assignment_data_model.save_to_db()
+        if saved:
+            return {
+                'error': False,
+                'message': 'Successfully added'
+            }
+        else:
+            return {
+                'error': True,
+                'message': 'Error saving to db'
+            }

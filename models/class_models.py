@@ -60,6 +60,20 @@ class ClassModel(ResourseInfo):
             student_object = student_model.get_user_object()
             self.students_signed_up.append(student_object)
 
+    def set_assignments(self, assignments):
+        """Accept assignments as instance of AssignmentDataModel"""
+        for ass in assignments:
+            assignment = AssignmentModel()
+            assignment.initiate_resource(ass.teacher_id, ass.teacher_name, ass.created_on, ass.class_name)
+            assignment.assignment_id = ass.assignment_uuid
+            assignment.class_id = ass.class_uuid
+            assignment.assignment_title = ass.assignment_title
+            assignment.assignment_content = ass.assignment_content
+            assignment.deadline = ass.deadline
+            assignment_object = assignment.get_response_object()
+            self.assignments.append(assignment_object)
+
+
     def get_response_object(self):
         class_ = {
             'class_uuid': self.class_uuid,
@@ -98,6 +112,20 @@ class AssignmentModel(ResourseInfo):
 
     def set_class_name(self, class_name):
         self.class_name = class_name
+
+    def get_response_object(self):
+        assignment = {
+            'assignment_id': self.assignment_id,
+            'class_name': self.class_name,
+            'class_id': self.class_id,
+            'teacher_id': self.teacher_id,
+            'assignment_title': self.assignment_title,
+            'assignment_content': self.assignment_content,
+            'created_on': self.created_on,
+            'deadline': self.deadline,
+            'submissions': self.submissions
+        }
+        return assignment
 
 
 class SumbissionModel(ResourseInfo):
