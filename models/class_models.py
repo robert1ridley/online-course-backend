@@ -96,6 +96,7 @@ class AssignmentModel(ResourseInfo):
         self.class_name = None
         self.class_id = None
         self.teacher_id = None
+        self.teacher_name = None
         self.assignment_title = None
         self.assignment_content = None
         self.created_on = None
@@ -114,17 +115,11 @@ class AssignmentModel(ResourseInfo):
     def set_class_name(self, class_name):
         self.class_name = class_name
 
-    # TODO: See whether this strategy pattern actually works
-    def set_submissions(self, func = None):
-        """Implement Strategy pattern to set submission depending on what user type is.
-        Students should just see a submission object, which is their own submission. Teacher
-        should see an array of submissions, which is all the submissions from each student in the class"""
-        if func is not None:
-            self.execute_set_submissions = types.MethodType(func, self)
+    def set_assignment_submissions_student(self):
+        self.submissions = {}
 
-    def execute_set_submissions(self):
-        print("Need to specify a function")
-        raise NotImplementedError
+    def set_assignment_submissions_teacher(self):
+        self.submissions = []
 
     def get_response_object(self):
         assignment = {
@@ -132,6 +127,7 @@ class AssignmentModel(ResourseInfo):
             'class_name': self.class_name,
             'class_id': self.class_id,
             'teacher_id': self.teacher_id,
+            'teacher_name': self.teacher_name,
             'assignment_title': self.assignment_title,
             'assignment_content': self.assignment_content,
             'created_on': self.created_on,
@@ -141,24 +137,19 @@ class AssignmentModel(ResourseInfo):
         return assignment
 
 
-def set_assignment_submissions_student(self):
-    self.submissions = '1'
-
-
-def set_assignment_submissions_teacher(self):
-    self.submissions = []
-
-
-class SumbissionModel(ResourseInfo):
+class SubmissionModel(ResourseInfo):
     def __init__(self):
         self.submission_id = None
+        self.assignment_id = None
+        self.class_id = None
         self.class_name = None
         self.created_on = None
         self.teacher_id = None
+        self.teacher_name = None
         self.student_id = None
+        self.student_name = None
         self.grade = None
         self.content = None
-        self.comments = None
 
     def set_teacher_id(self, teacher_id):
         self.teacher_id = teacher_id
@@ -172,6 +163,22 @@ class SumbissionModel(ResourseInfo):
     def set_class_name(self, class_name):
         self.class_name = class_name
 
+    def get_response_object(self):
+        submission = {
+            'submission_id': self.submission_id,
+            'assignment_id': self.assignment_id,
+            'class_id': self.class_id,
+            'class_name': self.class_name,
+            'created_on': self.created_on,
+            'teacher_id': self.teacher_id,
+            'teacher_name': self.teacher_name,
+            'student_id': self.student_id,
+            'student_name': self.student_name,
+            'grade': self.grade,
+            'content': self.content
+        }
+
+        return submission
 
 class SignUpForClassModel(ResourseInfo):
     def __init__(self):

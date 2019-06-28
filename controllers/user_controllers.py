@@ -152,6 +152,8 @@ class SingleStudentUserController(Resource):
         user_data = get_usertype()
         username = get_jwt_identity()
         usertype = user_data['usertype']
+        print('usertype: {}'.format(usertype))
+        print('username: {}'.format(username))
         full_user = UserDataModelFactory.factory(usertype).find_by_username(username)
         user = UserFactory.factory(usertype)
         user.username = full_user.username
