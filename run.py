@@ -48,6 +48,8 @@ api.add_resource(class_controllers.CreateNewClassController, '/user/teacher/newc
 api.add_resource(class_controllers.GetAllTeacherClasses, '/user/teacher/allclasses')
 api.add_resource(class_controllers.GetSingleClassTeacher, '/user/teacher/singleclass')
 api.add_resource(class_controllers.GetAllClasses, '/user/student/allclasses')
+api.add_resource(class_controllers.GetSingleClassStudent, '/user/student/singleclass')
 api.add_resource(class_controllers.SignUpForClass, '/user/student/classsignup')
 api.add_resource(class_controllers.GetAllStudentClasses, '/user/student/myclasses')
 api.add_resource(class_controllers.AddAssignment, '/user/teacher/newassignment')
+api.add_resource(class_controllers.GetSingleAssignmentTeacher, '/user/teacher/assignment/retrieve')

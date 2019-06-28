@@ -2,6 +2,7 @@ import os, sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from data_access_models.user_data_models import UserDataModelFactory
 from models import UserFactory
+import types
 
 class ResourseInfo:
     """Template pattern for class(课程) and assignment classes"""
@@ -99,7 +100,7 @@ class AssignmentModel(ResourseInfo):
         self.assignment_content = None
         self.created_on = None
         self.deadline = None
-        self.submissions = []
+        self.submissions = None
 
     def set_teacher_id(self, teacher_id):
         self.teacher_id = teacher_id
@@ -112,6 +113,18 @@ class AssignmentModel(ResourseInfo):
 
     def set_class_name(self, class_name):
         self.class_name = class_name
+
+    # TODO: See whether this strategy pattern actually works
+    def set_submissions(self, func = None):
+        """Implement Strategy pattern to set submission depending on what user type is.
+        Students should just see a submission object, which is their own submission. Teacher
+        should see an array of submissions, which is all the submissions from each student in the class"""
+        if func is not None:
+            self.execute_set_submissions = types.MethodType(func, self)
+
+    def execute_set_submissions(self):
+        print("Need to specify a function")
+        raise NotImplementedError
 
     def get_response_object(self):
         assignment = {
@@ -128,6 +141,14 @@ class AssignmentModel(ResourseInfo):
         return assignment
 
 
+def set_assignment_submissions_student(self):
+    self.submissions = '1'
+
+
+def set_assignment_submissions_teacher(self):
+    self.submissions = []
+
+
 class SumbissionModel(ResourseInfo):
     def __init__(self):
         self.submission_id = None
@@ -141,6 +162,9 @@ class SumbissionModel(ResourseInfo):
 
     def set_teacher_id(self, teacher_id):
         self.teacher_id = teacher_id
+
+    def set_teacher_name(self, teacher_name):
+        self.teacher_name = teacher_name
 
     def set_created_on(self, created_on):
         self.created_on = created_on

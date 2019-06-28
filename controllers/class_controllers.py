@@ -53,6 +53,13 @@ def get_all_student_class_data():
     return parser.parse_args()
 
 
+def get_single_class_student_req():
+    parser.add_argument('userid', help='id of user')
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    parser.add_argument('class_id', help='Enter id of class')
+    return parser.parse_args()
+
+
 def get_add_assignment_data():
     parser.add_argument('userid', help='id of user')
     parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
@@ -63,6 +70,15 @@ def get_add_assignment_data():
     parser.add_argument('end_day', help='Enter end date for class')
     parser.add_argument('end_month', help='Enter end date for class')
     parser.add_argument('end_year', help='Enter end date for class')
+    return parser.parse_args()
+
+
+def get_single_assignment_teacher():
+    parser.add_argument('userid', help='id of user')
+    parser.add_argument('usertype', help='Enter type: STUDENT | TEACHER | ADMIN')
+    parser.add_argument('username', help='Add name of user')
+    parser.add_argument('class_id', help='Enter id of class')
+    parser.add_argument('assignment_id', help='Enter id of assignment')
     return parser.parse_args()
 
 
@@ -77,11 +93,6 @@ def validate_teacher_and_class(teacher_id, class_):
     if teacher_id != class_.teacher_id:
         return False, {'error': True, 'message': 'User not authorized to view resource'}
     return True, True
-
-
-def convert_date_to_json_serializable(o):
-    if isinstance(o, datetime.datetime):
-        return o.__str__()
 
 
 def validate_create_class(data):
@@ -118,6 +129,52 @@ def validate_add_assignment(data):
     if end_day == None or end_month == None or end_year == None:
         return False, {'error': True, 'message': 'Please fill out class finish date'}
     return True, True
+
+
+def validate_get_single_assignment_teacher(data, assignment_data_model):
+    usertype = data['usertype']
+    teacher_id = data['userid']
+    if not assignment_data_model:
+        return False, {
+            'error': True,
+            'message': 'Resource Not Found'
+        }
+    if usertype != 'TEACHER' and usertype != 'ADMIN':
+        return False, {
+            'error': True,
+            'message': 'User not authorized to view page'
+        }
+    if teacher_id != assignment_data_model.teacher_id:
+        return False, {
+            'error': True,
+            'message': 'User not authorized to view page'
+        }
+    return True, True
+
+
+def validate_get_single_class_student(data, class_data_model, signed_up_student):
+    usertype = data['usertype']
+    if not class_data_model:
+        return False, {
+            'error': True,
+            'message': 'Resource Not Found'
+        }
+    if usertype != 'STUDENT' and usertype != 'ADMIN':
+        return False, {
+            'error': True,
+            'message': 'User not authorized to view page'
+        }
+    if not signed_up_student:
+        return False, {
+            'error': True,
+            'message': 'User not authorized to view page'
+        }
+    return True, True
+
+
+def convert_date_to_json_serializable(o):
+    if isinstance(o, datetime.datetime):
+        return o.__str__()
 
 
 class CreateNewClassController(Resource):
@@ -327,6 +384,31 @@ class GetAllStudentClasses(Resource):
         return json.dumps(classes_signed_up_by_student, default=convert_date_to_json_serializable)
 
 
+class GetSingleClassStudent(Resource):
+    @jwt_required
+    def post(self):
+        request_data = get_single_class_student_req()
+        class_data_model = ClassDataModel.find_by_class_id(request_data['class_id'])
+        signed_up_student = ClassSignupDataModel.find_by_class_id_and_student_id(request_data['class_id'], request_data['userid'])
+        is_request_valid, payload = validate_get_single_class_student(request_data, class_data_model, signed_up_student)
+        if not is_request_valid:
+            return payload
+        full_class_model = ClassModel()
+        full_class_model.initiate_resource(class_data_model.teacher_id, class_data_model.teacher_name, class_data_model.created_on,
+                                           class_data_model.class_name)
+        full_class_model.class_uuid = class_data_model.class_uuid
+        full_class_model.class_description = class_data_model.class_description
+        full_class_model.class_end_date = class_data_model.class_end_date
+        students_signed_up = ClassSignupDataModel.find_by_class_id(class_data_model.class_uuid)
+        if students_signed_up is not None:
+            full_class_model.set_students_signed_up(students_signed_up)
+        assignments = AssignmentDataModel.find_by_class_id(class_data_model.class_uuid)
+        if assignments is not None:
+            full_class_model.set_assignments(assignments)
+        full_object = full_class_model.get_response_object()
+        return json.dumps(full_object, default=convert_date_to_json_serializable)
+
+
 class AddAssignment(Resource):
     @jwt_required
     def post(self):
@@ -367,3 +449,23 @@ class AddAssignment(Resource):
                 'error': True,
                 'message': 'Error saving to db'
             }
+
+
+class GetSingleAssignmentTeacher(Resource):
+    @jwt_required
+    def post(self):
+        request_data = get_single_assignment_teacher()
+        assignment_data_model = AssignmentDataModel.find_by_assignment_id(request_data['assignment_id'])
+        is_request_valid, payload = validate_get_single_assignment_teacher(request_data, assignment_data_model)
+        if not is_request_valid:
+            return payload
+        assignment_model = AssignmentModel()
+        assignment_model.initiate_resource(assignment_data_model.teacher_id, assignment_data_model.teacher_name,
+                                           assignment_data_model.created_on, assignment_data_model.class_name)
+        assignment_model.assignment_id = assignment_data_model.assignment_uuid
+        assignment_model.class_id = assignment_data_model.class_uuid
+        assignment_model.assignment_title = assignment_data_model.assignment_title
+        assignment_model.assignment_content = assignment_data_model.assignment_content
+        assignment_model.deadline = assignment_data_model.deadline
+        response_obj = assignment_model.get_response_object()
+        return json.dumps(response_obj, default=convert_date_to_json_serializable)

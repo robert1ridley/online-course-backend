@@ -96,6 +96,9 @@ class ClassSignupDataModel(db.Model):
     def find_by_class_id(cls, class_id):
         return cls.query.filter_by(class_uuid=class_id)
 
+    @classmethod
+    def find_by_class_id_and_student_id(cls, class_uuid, student_id):
+        return cls.query.filter_by(class_uuid=class_uuid).filter_by(student_id=student_id).first()
 
     @classmethod
     def find_all_by_student_id(cls, student_id):
@@ -148,12 +151,17 @@ class AssignmentDataModel(db.Model):
 
 
     def save_to_db(self):
-        # try:
+        try:
             db.session.add(self)
             db.session.commit()
             return True
-        # except:
-        #     return False
+        except:
+            return False
+
+
+    @classmethod
+    def find_by_assignment_id(cls, assignment_uuid):
+        return cls.query.filter_by(assignment_uuid=assignment_uuid).first()
 
 
     @classmethod
