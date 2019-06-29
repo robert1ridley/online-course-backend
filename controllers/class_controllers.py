@@ -225,7 +225,13 @@ def validate_get_single_class_student(data, class_data_model, signed_up_student)
     return True, True
 
 
-def validate_new_submission(signed_up_student, existing_submission):
+def validate_new_submission(data, signed_up_student, existing_submission):
+    content = data['assignment_content']
+    if content == '':
+        return False, {
+            'error': True,
+            'message': 'Field must not be left blank'
+        }
     if not signed_up_student:
         return False, {
             'error': True,
@@ -243,27 +249,31 @@ def validate_grade_setting(data):
     usertype = data['usertype']
     try:
         grade = int(data['grade'])
-    except ValueError:
-        return False, {
+    except (ValueError, TypeError):
+        response = {
             'error': True,
             'message': 'Please enter grade as a whole number'
         }
+        return False, json.dumps(response)
 
     if usertype != 'TEACHER' and usertype != 'ADMIN':
-        return False, {
+        response = {
             'error': True,
             'message': 'User not authorized'
         }
+        return False, json.dumps(response)
     if type(grade) != int:
-        return False, {
+        response = {
             'error': True,
             'message': 'Please enter grade as a whole number'
         }
+        return False, json.dumps(response)
     if grade < 0 or grade > 100:
-        return False, {
+        response = {
             'error': True,
             'message': 'Enter a grade between 0 and 100'
         }
+        return False, json.dumps(response)
     return True, True
 
 
@@ -629,7 +639,7 @@ class SetSubmission(Resource):
                                                                                  request_data['userid'])
         existing_submission = SubmissionDataModel.find_by_student_id_and_assignment_id(request_data['userid'],
                                                                                        request_data['assignment_id'])
-        is_valid, payload = validate_new_submission(signed_up_student, existing_submission)
+        is_valid, payload = validate_new_submission(request_data, signed_up_student, existing_submission)
         if not is_valid:
             return payload
         submission_model = SubmissionModel()
