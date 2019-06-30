@@ -4,7 +4,7 @@ from data_access_models.user_data_models import UserDataModelFactory
 from models import UserFactory
 import types
 
-class ResourseInfo:
+class ResourceInfo:
     """Template pattern for class(课程) and assignment classes"""
 
     def set_teacher_id(self, teacher_id): pass
@@ -20,7 +20,7 @@ class ResourseInfo:
         self.set_teacher_name(teacher_name)
 
 
-class ClassModel(ResourseInfo):
+class ClassModel(ResourceInfo):
     def __init__(self):
         self.class_uuid = None
         self.class_name = None
@@ -90,7 +90,7 @@ class ClassModel(ResourseInfo):
         return class_
 
 
-class AssignmentModel(ResourseInfo):
+class AssignmentModel(ResourceInfo):
     def __init__(self):
         self.assignment_id = None
         self.class_name = None
@@ -137,7 +137,7 @@ class AssignmentModel(ResourseInfo):
         return assignment
 
 
-class SubmissionModel(ResourseInfo):
+class SubmissionModel(ResourceInfo):
     def __init__(self):
         self.submission_id = None
         self.assignment_id = None
@@ -180,7 +180,7 @@ class SubmissionModel(ResourseInfo):
 
         return submission
 
-class SignUpForClassModel(ResourseInfo):
+class SignUpForClassModel(ResourceInfo):
     def __init__(self):
         self.item_uuid = None
         self.class_uuid = None

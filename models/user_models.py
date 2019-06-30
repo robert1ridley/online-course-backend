@@ -29,17 +29,14 @@ class UserStudent(UserFactory):
     self.uuid = None
     self.usertype = 'STUDENT'
     self.is_admin = False
-    # self.classes_signed_up = []
-    # self.grades = {}
+
 
   def get_user_object(self):
     user = {
       'username': self.username,
       'uuid': self.uuid,
       'usertype': self.usertype,
-      'is_admin': self.is_admin,
-      # 'classes_signed_up': self.classes_signed_up,
-      # 'grades': self.grades
+      'is_admin': self.is_admin
     }
 
     return user
@@ -52,15 +49,14 @@ class UserTeacher(UserFactory):
     self.uuid = None
     self.usertype = 'TEACHER'
     self.is_admin = False
-    # self.teaching_classes = []
+
 
   def get_user_object(self):
     user = {
       'username': self.username,
       'uuid': self.uuid,
       'usertype': self.usertype,
-      'is_admin': self.is_admin,
-      # 'teaching_classes': self.teaching_classes,
+      'is_admin': self.is_admin
     }
 
     return user
